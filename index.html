@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UTD Pop-up Storybook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,500;1,9..144,700&family=Inter:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: a gentle children's pop-up book narrating a ridiculous office fight
+   IDEA: a real movable book lying open on an oak desk, rendered in WebGL with light and shadow
+   PICTURE: the book fills the view; paper scenes fold up, flaps lift, tabs pull, a volvelle turns
+   COLOUR and TYPE: oak desk, matte paper colours per spread; Fraunces italic story, Inter for controls
+   LAYOUT: 3D view on top, commentary strip and controls beneath; story text mirrors there on phones */
+:root{color-scheme:light;--ink:#2b2a33;--navy:#2f3858;--coral:#e8673f}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:#d9c5a7;color:var(--ink);font:16px/1.5 Inter,system-ui,sans-serif;overflow-x:clip}
+#view{position:relative;width:100%;height:min(74vh,760px);min-height:380px}
+@media(max-width:720px){#view{height:calc(68vw + 90px);min-height:300px}}
+#view canvas{display:block;width:100%;height:100%;touch-action:none}
+.ttl{position:absolute;left:0;right:0;top:12px;text-align:center;font:italic 700 clamp(20px,3.4vw,30px)/1.1 Fraunces,Georgia,serif;pointer-events:none;color:#3a2f22}
+#load{position:absolute;inset:0;display:grid;place-items:center;font:italic 500 22px Fraunces,Georgia,serif;background:#d9c5a7;transition:opacity .6s}
+.panel{max-width:760px;margin:0 auto;padding:6px 14px 28px;display:grid;gap:12px}
+.story{display:block;background:#fbf8f2;border-radius:8px;padding:14px 16px;box-shadow:0 3px 8px #0002;font:italic 500 18px/1.4 Fraunces,Georgia,serif}
+.narrow .story{display:block}
+.talk{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.say{display:grid;grid-template-columns:56px 1fr;gap:8px;align-items:start;background:#fbf8f2;border-radius:8px;padding:8px 10px;box-shadow:0 2px 6px #0002;font:italic 500 15.5px/1.35 Fraunces,Georgia,serif;min-height:58px}
+.say svg{width:56px;height:56px}
+.say b{display:block;font:700 11px Inter,sans-serif;color:#7a6a55}
+@media(max-width:560px){.talk{grid-template-columns:1fr}}
+.rhyme{background:#fbf8f2;border-radius:10px;padding:12px 16px;box-shadow:0 2px 6px #0002;text-align:center;font:italic 600 18px/1.45 Fraunces,Georgia,serif;color:#3a2a20}
+.rhyme span{display:block}
+.rhyme[hidden]{display:none}
+.rhyme.pop{animation:rpop .45s ease-out}
+@keyframes rpop{0%{transform:scale(.92);opacity:0}100%{transform:none;opacity:1}}
+body.verse .talk{display:none}
+.hint{text-align:center;font-weight:700;margin:0;color:#3a2f22}
+.ctrls{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.btn{min-height:46px;padding:10px 18px;border:0;border-radius:6px;background:var(--navy);color:#fff;font:700 15px Inter,sans-serif;cursor:pointer;box-shadow:0 3px 6px #0003}
+.btn.lite{background:#fbf8f2;color:var(--ink)}.btn.hot{background:var(--coral)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn:focus-visible{outline:3px solid #2f6fe0;outline-offset:2px}
+.note{font-size:13px;color:#5b5040;text-align:center;margin:0}
+.modal{position:fixed;inset:0;background:rgba(30,25,20,.55);display:grid;place-items:center;z-index:10;padding:16px}.modal[hidden]{display:none}
+.mbox{background:#fbf8f2;border-radius:10px;padding:14px;max-width:640px;width:100%;box-shadow:0 10px 30px #0006;display:grid;gap:10px}.mbox img{width:100%;display:block;border-radius:6px}
+</style>
+</head>
+<body>
+<div id="view"><canvas id="c"></canvas><div class="ttl">Ultimate Teams Deathmatch</div><div id="load">Opening the book…</div></div>
+<div class="modal" id="modal" hidden><div class="mbox" role="dialog" aria-label="Your fight card"><img id="cardImg" alt="Your personal UTD fight card"><p class="note">Right-click or long-press the card to save it.</p><div class="ctrls"><button class="btn hot" id="mcopy">Copy for Teams</button><button class="btn lite" id="mclose">Put it back in the pocket</button></div></div></div>
+<div class="panel">
+ <div class="story" id="story"></div>
+ <div class="talk">
+  <div class="say"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="58" fill="#f2c94c"/><path d="M14 120 Q16 88 40 82 L60 96 L80 82 Q104 88 106 120Z" fill="#2f3858"/><path d="M40 82 L60 112 L52 84Z M80 82 L60 112 L68 84Z" fill="#232a44"/><path d="M50 84 L60 100 L70 84Z" fill="#fff"/><path d="M48 94 L60 99 L48 104Z M72 94 L60 99 L72 104Z" fill="#d7263d"/><circle cx="60" cy="99" r="3" fill="#a81c2e"/><rect x="52" y="70" width="16" height="14" fill="#e9b28a"/><ellipse cx="60" cy="52" rx="27" ry="29" fill="#f6c39b"/><circle cx="33" cy="54" r="6" fill="#e9b28a"/><circle cx="87" cy="54" r="6" fill="#e9b28a"/><path d="M33 46 Q32 20 60 20 Q90 20 87 46 Q84 30 64 32 Q48 30 40 38 Q36 42 33 46Z" fill="#3a2414"/><path d="M48 26 Q62 22 76 28" stroke="#7a5a3a" stroke-width="3" fill="none"/><path d="M30 50 Q30 22 60 18 Q90 22 90 50" stroke="#2b2a33" stroke-width="4" fill="none"/><rect x="25" y="46" width="9" height="15" rx="4" fill="#2b2a33"/><path d="M30 60 Q32 76 48 74" stroke="#2b2a33" stroke-width="2.5" fill="none"/><circle cx="49" cy="74" r="3.5" fill="#2b2a33"/><path d="M42 42 Q48 37 54 41 M66 41 Q72 37 78 42" stroke="#3a2414" stroke-width="3.5" fill="none"/><circle cx="48" cy="49" r="3.2" fill="#2b2a33"/><circle cx="72" cy="49" r="3.2" fill="#2b2a33"/><circle cx="49" cy="48" r="1" fill="#fff"/><circle cx="73" cy="48" r="1" fill="#fff"/><path d="M57 52 Q60 60 63 52" stroke="#d99a7a" stroke-width="2.5" fill="none"/><circle cx="40" cy="60" r="5" fill="#f19a8a" opacity=".5"/><circle cx="80" cy="60" r="5" fill="#f19a8a" opacity=".5"/><path d="M48 70 Q60 84 72 70Z" fill="#7a1f2a"/><path d="M52 71 Q60 76 68 71" fill="#fff"/><path d="M36 64 Q48 56 60 63 Q72 56 84 64 Q88 70 82 70 Q72 64 60 68 Q48 64 38 70 Q32 70 36 64Z" fill="#5a3a22"/></svg><p style="margin:0"><b>Barry Bellows</b><span id="b1"></span></p></div>
+  <div class="say"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="58" fill="#7fd3d6"/><path d="M16 120 Q18 90 42 84 L60 92 L78 84 Q102 90 104 120Z" fill="#e0a526"/><path d="M42 84 L54 104 L60 92Z M78 84 L66 104 L60 92Z" fill="#c98d12"/><circle cx="50" cy="104" r="2" fill="#f7f4ee"/><circle cx="50" cy="112" r="2" fill="#f7f4ee"/><path d="M46 88 Q60 98 74 88" stroke="#f7f4ee" stroke-width="3" stroke-dasharray="1 4" stroke-linecap="round" fill="none"/><rect x="53" y="72" width="14" height="14" fill="#b37c5c"/><path d="M28 62 Q24 22 60 20 Q96 22 92 62 L92 80 L80 80 L80 50 L40 50 L40 80 L28 80Z" fill="#1d1d26"/><ellipse cx="60" cy="54" rx="24" ry="27" fill="#c98f6b"/><path d="M34 46 Q40 24 64 26 Q84 28 86 46 Q76 36 60 38 Q46 36 34 46Z" fill="#1d1d26"/><path d="M36 46 H84" stroke="#1d1d26" stroke-width="5"/><circle cx="36" cy="66" r="3" fill="#f7f4ee"/><circle cx="84" cy="66" r="3" fill="#f7f4ee"/><path d="M38 52 Q38 46 48 46 Q56 46 56 53 Q56 60 47 60 Q38 60 38 52Z M64 53 Q64 46 72 46 Q82 46 82 52 Q82 60 73 60 Q64 60 64 53Z" fill="#fff" stroke="#c0392b" stroke-width="3"/><path d="M36 48 L40 44 M84 48 L80 44" stroke="#c0392b" stroke-width="3"/><path d="M56 53 H64" stroke="#c0392b" stroke-width="2.5"/><circle cx="47" cy="54" r="2.6" fill="#2b2a33"/><circle cx="73" cy="54" r="2.6" fill="#2b2a33"/><path d="M42 44 L52 45 M68 45 L78 44" stroke="#1d1d26" stroke-width="2.5"/><path d="M58 60 Q60 64 62 60" stroke="#a8714d" stroke-width="2" fill="none"/><path d="M52 70 H68" stroke="#8a3a3a" stroke-width="3" stroke-linecap="round"/><path d="M84 30 L98 12" stroke="#e6c25a" stroke-width="4"/><path d="M98 12 L101 8" stroke="#f4a08a" stroke-width="4"/><path d="M84 30 L82 33" stroke="#2b2a33" stroke-width="3"/></svg><p style="margin:0"><b>Dot Mallory</b><span id="b2"></span></p></div>
+ </div>
+ <div class="rhyme" id="rhyme" hidden><span id="r1"></span><span id="r2"></span></div>
+ <p class="hint" id="hint"></p>
+ <div class="ctrls">
+  <button class="btn lite" id="prev">Back</button>
+  <button class="btn hot" id="act">Do it for me</button>
+  <button class="btn" id="next">Turn the page</button>
+  <button class="btn hot" id="copy" style="display:none">Copy my fight for Teams</button>
+  <button class="btn lite" id="again" style="display:none">Read it again</button>
+  <button class="btn lite" id="snd" aria-pressed="true">Sound on</button>
+ </div>
+ <p class="note" id="note">Drag a page corner to turn it. Drag flaps up, pull tabs, turn the wheel. Everyone gets the same ending, but not the same fight.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="engine.js"></script>
+<script src="fighters/velvet.js"></script>
+<script src="fighters/static.js"></script>
+<script src="fighters/dusty.js"></script>
+<script src="fighters/bristle.js"></script>
+<script src="episodes/ep1.js"></script>
+<script src="episodes/ep2.js"></script>
+<script>if(window.UTD)UTD.boot();</script>
+</body>
+</html>

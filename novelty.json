@@ -1,0 +1,88 @@
+{
+  "rule": "Each new episode adds at least one new mechanism and one new arena. No attack, finisher or story shape is reused unless it is a deliberate callback.",
+  "episodes": [
+    {
+      "id": "1",
+      "fighters": [
+        "velvet",
+        "static"
+      ],
+      "winner": "velvet",
+      "arenas": [
+        "ring"
+      ],
+      "mechanisms": [
+        "lift-the-flap (title)",
+        "flip-book corner",
+        "pull-tab lift (intro)",
+        "pull-tab reveal (intro)",
+        "bottom-edge attack tabs",
+        "spring-loaded entrance",
+        "light-up towers",
+        "geared dial + lever",
+        "battery volvelle wheel",
+        "finisher pull-tab",
+        "gatefold",
+        "pocket fight card",
+        "pivot arm swing"
+      ],
+      "attacks": [
+        "drones (swarm)",
+        "reply (volley)",
+        "ad (screen + rings)",
+        "jet (dash)",
+        "rotary (tether)",
+        "fondue (source + lob)"
+      ],
+      "finishers": [
+        "hold (speech + stream + sway)"
+      ],
+      "injuries": [
+        "velvet armL",
+        "static armR"
+      ],
+      "story_shape": "trade blows, then the loser's own weakness (dead phone) sets up the finisher"
+    },
+    {
+      "id": "2",
+      "fighters": [
+        "dusty",
+        "bristle"
+      ],
+      "winner": "bristle",
+      "arenas": [
+        "bigTop (sawdust ring with 3D red/white kerb split at the spine, striped tent walls, spotlights)"
+      ],
+      "mechanisms": [
+        "swap tab (intro: frill fan, beard fan + tutu flare, pedestal lift)",
+        "tent flap curtains with rope pull (finish, cold draft, sets 'cold')",
+        "hoist + human cannonball (finisher)"
+      ],
+      "attacks": [
+        "tail (tailwhip)",
+        "cricket (hop + bounce lob)",
+        "bob (bobblehead charge)",
+        "whisker (tether from beard)",
+        "armswing (swings her own severed arm)",
+        "clap (two giant palms)"
+      ],
+      "finishers": [
+        "cannon (hoist overhead, tail drops, human cannonball, lands KO)"
+      ],
+      "injuries": [
+        "bristle kettlebell arm",
+        "dusty claw arm",
+        "dusty tail (finisher)"
+      ],
+      "story_shape": "circus rivals; the loser's weakness (cold) is exploited, then the winner's showpiece act finishes him",
+      "reused_choosers": [
+        "bottom-edge tabs (R1)",
+        "geared dial + lever (R2)"
+      ]
+    }
+  ],
+  "notes": [
+    "Episode 2 car park arena and accordion speed bump were dropped after review: arenas must relate to the fighters.",
+    "Gore: red confetti and red splats on hits (EP.gore defaults on; set false to disable)."
+  ]
+}
